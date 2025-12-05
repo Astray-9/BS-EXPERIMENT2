@@ -1,0 +1,26 @@
+# 校园跑腿服务平台 - 开发环境 requirements.txt
+# 核心依赖（指定稳定版本，避免兼容性问题）
+Flask==2.3.3                    # Web框架核心（轻量、易扩展，适配本项目架构）
+Flask-SQLAlchemy==3.1.1         # ORM工具，连接Flask与数据库（支持SQLite/MySQL切换）
+Flask-JWT-Extended==4.5.3       # JWT身份认证，用于用户登录Token生成与验证
+Flask-CORS==4.0.0               # 解决跨域问题（前端本地开发与后端联调必备）
+
+# 数据库相关（适配开发/生产环境）
+pymysql==1.1.0                  # MySQL驱动（生产环境连接MySQL用，开发环境SQLite无需）
+SQLAlchemy==2.0.23              # ORM核心依赖（Flask-SQLAlchemy的底层依赖）
+
+# 文件存储（OSS相关）
+aliyun-oss-python-sdk==2.18.1   # 阿里云OSS SDK，用于打印文件上传/下载
+python-multipart==0.0.6         # 处理FormData格式文件上传（配合OSS上传接口）
+
+# 辅助工具
+python-dotenv==1.0.0            # 加载.env环境变量（存储敏感配置：数据库地址、OSS密钥等）
+uuid==1.30                      # 生成唯一文件名/订单ID（避免文件冲突）
+requests==2.31.0                # HTTP请求工具（可选，用于调用第三方API或内部服务通信）
+gunicorn==21.2.0                # WSGI服务器（开发环境可模拟生产运行，可选）
+
+# 开发调试工具（可选，提升开发效率）
+ipython==8.17.2                 # 增强版Python终端，调试更便捷
+werkzeug==2.3.7                 # Flask内置调试工具（提供调试界面、热重载）
+pyyaml==6.0.1                   # 支持YAML配置文件（可选，用于复杂配置管理）
+

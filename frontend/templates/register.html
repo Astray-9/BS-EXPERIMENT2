@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>加入我们 - UniRun</title>
+    <link rel="stylesheet" href="/static/css/global.css">
+    <link rel="stylesheet" href="/static/css/layout.css">
+    <link rel="stylesheet" href="/static/css/components.css">
+    <link rel="stylesheet" href="/static/css/animations.css">
+</head>
+<body>
+    <div class="auth-wrapper fade-in">
+        <div class="auth-card">
+            <div class="auth-sidebar register-bg">
+                <div class="auth-brand">
+                    <h1>加入我们</h1>
+                    <p>开启你的互助之旅</p>
+                </div>
+            </div>
+
+            <div class="auth-content">
+                <h2 class="auth-title">创建新账号</h2>
+                <p class="auth-subtitle" style="margin-bottom: 30px;"> </p> <form id="register-form">
+                    <div class="form-group">
+                        <input type="text" id="student_id" class="form-input" placeholder="学号" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="text" id="name" class="form-input" placeholder="昵称" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="password" id="password" class="form-input" placeholder="密码" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="password" id="confirm_password" class="form-input" placeholder="确认密码" required>
+                    </div>
+                    <button type="submit" class="btn btn-register-action btn-block">立即注册</button>
+                </form>
+                
+                <p class="auth-footer" style="text-align: center;">
+                    已有账号? <a href="/login">去登录</a>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/js/api.js"></script>
+    <script src="/static/js/auth.js"></script>
+</body>
+</html>

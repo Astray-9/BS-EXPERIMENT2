@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}发布打印 - UniRun{% endblock %}
+
+{% block content %}
+<div class="auth-wrapper fade-in" style="display: flex; justify-content: center; min-height: calc(100vh - 140px); background: #fff;">
+    
+    <div style="width: 100%; max-width: 600px; margin: 0 auto; display: flex; flex-direction: column; justify-content: space-between; min-height: 100%;margin-top: -90px;">
+        <h2 style="text-align: center; font-size: 24px; font-weight: 800; color: #0F172A; margin-bottom: 40px;">
+            发布打印需求
+        </h2>
+
+        <form id="publish-form" data-category="print" style="display: flex; flex-direction: column; gap: 0.6rem;">
+            
+            <div class="form-group">
+                <div class="upload-area" onclick="document.getElementById('file-upload').click()">
+                    <div class="upload-icon">
+                        <i class="fas fa-file-upload"></i>
+                    </div>
+                    <div style="font-weight: 700; color: #9333EA; font-size: 16px; margin-bottom: 5px;">点击上传文件</div>
+                    <div style="color: #94A3B8; font-size: 13px;">支持 PDF, Word</div>
+                    <input type="file" id="file-upload" style="display: none;">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">备注</label>
+                <input type="text" name="description" class="form-input" placeholder="例如：期末复习资料，双面打印" style="height: 56px;" required>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">送达地址</label>
+                <input type="text" name="location_deliver" class="form-input" placeholder="例如：东18栋 302" style="height: 56px;" required>
+            </div>
+
+            <input type="hidden" name="reward_points" value="2">
+            <input type="hidden" name="location_deliver" value="打印店">
+
+            <button type="submit" class="btn btn-submit btn-block">
+                <i class="fas fa-check" style="margin-right: 8px;"></i> 发布订单
+            </button>
+        </form>
+    </div>
+
+    <a href="/" class="floating-back-btn">
+        <i class="fas fa-arrow-left"></i> 返回大厅
+    </a>
+</div>
+{% endblock %}
+{% block scripts %}<script src="/static/js/publish.js"></script>{% endblock %}

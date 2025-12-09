@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+
+{% block page_title %}个人中心{% endblock %}
+
+{% block content %}
+<div class="profile-container fade-in" style="max-width: 900px; margin: 0 auto; padding-top: 20px;">
+    <div class="card" style="padding: 30px 40px; min-height: 30vh; border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.05); border-radius: 24px; margin-bottom: 20px; position: relative;">
+        <!-- 左上角“个人信息”标签 -->
+        <style>
+            .card::before {
+                content: "个人信息";
+                position: absolute;
+                top: 30px; 
+                left: 40px; 
+                font-size: 24px; 
+                font-weight: 800; 
+                color: #1A202C; 
+                z-index: 1;
+            }
+             /* 新增响应式适配 */
+            @media (max-width: 600px) {
+                .profile-container {
+                    padding: 10px;
+                }
+                .card {
+                    padding: 20px 15px !important;
+                }
+                .card::before {
+                    top: 20px;
+                    left: 15px;
+                    font-size: 20px;
+                }
+                .card .flex {
+                    gap: 30px; 
+                }
+            }
+        </style>
+
+        <!-- 头像+用户名区域：保持与“个人信息”标签的布局协调 -->
+        <div style="display: flex; align-items: center; justify-content: center; margin-bottom: 15px; margin-top: 10px;">
+            <div style="width: 80px; height: 80px; margin-right: 15px;">
+                <img src="/static/assets/avatar_default.jpg" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 2px solid #F7FAFC; box-shadow: 0 4px 12px rgba(0,0,0,0.08);">
+            </div>
+            <h2 id="profile-name" style="font-size: 24px; font-weight: 800; color: #1A202C; margin: 0;">
+                2025001
+            </h2>
+        </div>
+
+        <!-- 信誉分文字（居中，作为评分区域的对齐基准） -->
+        <p style="color: #718096; font-size: 14px; margin: 0 0 20px; font-weight: 500; text-align: center; width: 100%;">
+            计算机科学学院 · 信誉分 <span id="credit-score" style="color: #4A5568; font-weight: 700;">85</span>
+        </p>
+
+        <!-- 评分/完成/准时区域（以信誉分文字为中间对齐） -->
+        <div style="display: flex; justify-content: center; gap: 60px; width: 100%;">
+            <div style="text-align: center;">
+                <div style="font-size: 32px; font-weight: 800; color: #3182CE; line-height: 1;">4.9</div>
+                <div style="font-size: 12px; color: #A0AEC0; margin-top: 4px; font-weight: 600;">评分</div>
+            </div>
+            <div style="text-align: center;">
+                <div style="font-size: 32px; font-weight: 800; color: #1A202C; line-height: 1;" id="order-count">128</div>
+                <div style="font-size: 12px; color: #A0AEC0; margin-top: 4px; font-weight: 600;">完成</div>
+            </div>
+            <div style="text-align: center;">
+                <div style="font-size: 32px; font-weight: 800; color: #48BB78; line-height: 1;">98%</div>
+                <div style="font-size: 12px; color: #A0AEC0; margin-top: 4px; font-weight: 600;">准时</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 下方能力模型模块：文字一行显示+五边图文字完整显示 -->
+    <div class="card" style="padding: 30px 40px; min-height: 30vh; border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.05); border-radius: 24px;">
+        <!-- 能力模型 -->
+        <h3 style="font-size: 24px; font-weight: 800; color: #1A202C; margin-bottom: 20px; text-align: center; white-space: nowrap; width: 100%;">
+            能力模型
+        </h3>
+        
+        <!-- 五边图容器   -->
+        <div style="width: 100%; height: calc(100% - 40px); display: flex; align-items: center; justify-content: center;">
+            <svg width="280" height="280" viewBox="0 0 200 200" style="object-fit: contain;">
+                <!-- 背景多边形网格（保留计算逻辑） -->
+                <polygon points="100,10 190,65 155,160 45,160 10,65" style="fill:none;stroke:#E2E8F0;stroke-width:1" />
+                <polygon points="100,40 160,76 136,140 64,140 40,76" style="fill:none;stroke:#E2E8F0;stroke-width:1" />
+                <polygon points="100,70 130,88 118,120 82,120 70,88" style="fill:none;stroke:#E2E8F0;stroke-width:1" />
+                
+                <!-- 连接线（保留计算逻辑） -->
+                <line x1="100" y1="100" x2="100" y2="10" style="stroke:#E2E8F0;stroke-width:1" />
+                <line x1="100" y1="100" x2="190" y2="65" style="stroke:#E2E8F0;stroke-width:1" />
+                <line x1="100" y1="100" x2="155" y2="160" style="stroke:#E2E8F0;stroke-width:1" />
+                <line x1="100" y1="100" x2="45" y2="160" style="stroke:#E2E8F0;stroke-width:1" />
+                <line x1="100" y1="100" x2="10" y2="65" style="stroke:#E2E8F0;stroke-width:1" />
+
+                <!-- 能力数据多边形（保留原始计算逻辑） -->
+                <polygon points="100,20 170,70 140,150 55,145 25,75" style="fill:rgba(66, 153, 225, 0.15);stroke:#4299E1;stroke-width:2" />
+                <circle cx="100" cy="20" r="3" fill="#3182CE" />
+                <circle cx="170" cy="70" r="3" fill="#3182CE" />
+                <circle cx="140" cy="150" r="3" fill="#3182CE" />
+                <circle cx="55" cy="145" r="3" fill="#3182CE" />
+                <circle cx="25" cy="75" r="3" fill="#3182CE" />
+                
+                <text x="90" y="12" font-size="10" fill="#718096">速度</text> <!-- 上移1px避免顶部截断 -->
+                <text x="182" y="68" font-size="10" fill="#718096">服务</text> <!-- 右移2px避免右侧截断 -->
+                <text x="143" y="178" font-size="10" fill="#718096">信誉</text> <!-- 下移3px避免底部截断 -->
+                <text x="32" y="178" font-size="10" fill="#718096">活跃</text> <!-- 左移3px避免左侧截断 -->
+                <text x="-2" y="68" font-size="10" fill="#718096">沟通</text> <!-- 左移2px避免左侧截断 -->
+            </svg>
+        </div>
+    </div>
+    
+    <a href="/" class="floating-back-btn">
+        <<i class="fas fa-arrow-left"></i> 返回大厅
+    </a>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', async () => {
+        try {
+            const res = await api.get('/user/profile');
+            const user = res.data;
+            
+            // 动态显示用户名（使用用户真实学号/姓名）
+            document.getElementById('profile-name').innerText = user.student_id || `2025001`; 
+            // 动态更新头像（若有用户自定义头像）
+            const avatarImg = document.querySelector('.profile-container img[src*="avatar_default.jpg"]');
+            if (user.avatar_url) {
+                avatarImg.src = user.avatar_url;
+            }
+            // 其他信息保持不变
+            document.getElementById('credit-score').innerText = user.credit_score || 85;
+            document.getElementById('order-count').innerText = user.completed_orders_count || 128;
+            
+        } catch (error) {
+            console.error('获取用户信息失败：', error);
+            // 失败时保持默认数据
+        }
+    });
+</script>
+{% endblock %}

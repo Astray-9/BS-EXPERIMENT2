@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% block title %}发布快递 - UniRun{% endblock %}
+
+{% block content %}
+<div class="auth-wrapper fade-in" style="display: flex; justify-content: center; min-height: calc(100vh - 140px); background: #fff;">
+    
+    <div style="width: 100%; max-width: 600px; margin: 0 auto; display: flex; flex-direction: column; justify-content: space-between; min-height: 100%;margin-top: -90px;">
+        <h2 style="text-align: center; font-size: 24px; font-weight: 800; color: #0F172A; margin-bottom: 40px;">
+            发布快递代拿
+        </h2>
+
+        <form id="publish-form" data-category="package" style="display: flex; flex-direction: column; gap: 0.6rem;">
+            <input type="hidden" name="tags" id="input_tags" value="小件">
+
+            <div class="form-group">
+                <label class="form-label">取件码</label>
+                <div style="position: relative;">
+                    <input type="text" name="pickup_code" class="form-input" placeholder="3-1-2056" style="height: 56px; padding-right: 60px; letter-spacing: 2px; font-weight: 600;" required>
+                    <div style="position: absolute; right: 10px; top: 10px; width: 36px; height: 36px; background: #F1F5F9; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #64748B; cursor: pointer;">
+                        <i class="fas fa-qrcode"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">包裹大小</label>
+                <div class="selector-grid">
+                    <div class="size-item active" onclick="selectSize(this, '小件')">
+                        <i class="fas fa-envelope"></i>
+                        <span>小件</span>
+                    </div>
+                    <div class="size-item" onclick="selectSize(this, '中件')">
+                        <i class="fas fa-box"></i>
+                        <span>中件</span>
+                    </div>
+                    <div class="size-item" onclick="selectSize(this, '大件')">
+                        <i class="fas fa-dolly"></i>
+                        <span>大件</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">送达地址</label>
+                <input type="text" name="location_deliver" class="form-input" placeholder="例如：东18栋 302" style="height: 56px;" required>
+            </div>
+
+            <div class="price-display-box blue">
+                <div class="price-label-text">
+                    跑腿费<br>
+                    <span style="font-size: 12px; font-weight: 400; opacity: 0.8;">基础运费</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 5px;">
+                    <span style="font-size: 20px; font-weight: bold;">¥</span>
+                    <input type="number" name="reward_points" value="2.00" min="1" step="0.5"
+                           style="background: transparent; border: none; font-size: 32px; font-weight: 800; color: #1E40AF; width: 100px; text-align: right; outline: none; font-family: 'DIN Alternate', sans-serif;">
+                </div>
+            </div>
+            
+             <input type="hidden" name="location_pickup" value="菜鸟驿站">
+             <input type="hidden" name="location_deliver" value="宿舍">
+
+            <button type="submit" class="btn btn-submit btn-block">
+                <i class="fas fa-check" style="margin-right: 8px;"></i> 发布订单
+            </button>
+        </form>
+    </div>
+
+    <a href="/" class="floating-back-btn">
+        <i class="fas fa-arrow-left"></i> 返回大厅
+    </a>
+</div>
+
+<script>
+    function selectSize(element, value) {
+        document.querySelectorAll('.size-item').forEach(el => el.classList.remove('active'));
+        element.classList.add('active');
+        document.getElementById('input_tags').value = value;
+    }
+</script>
+{% endblock %}
+{% block scripts %}<script src="/static/js/publish.js"></script>{% endblock %}

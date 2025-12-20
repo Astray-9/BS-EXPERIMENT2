@@ -1,13 +1,19 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-<head>
+<head> 
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>加入我们 - UniRun</title>
     <link rel="stylesheet" href="/static/css/global.css">
     <link rel="stylesheet" href="/static/css/layout.css">
     <link rel="stylesheet" href="/static/css/components.css">
     <link rel="stylesheet" href="/static/css/animations.css">
+    <style>
+        .mobile-brand { display: none; margin-bottom: 30px; }
+        .mobile-brand h1 { font-size: 32px; font-weight: 800; color: #FF6B35; line-height: 1.1; }
+        .mobile-brand p { color: #64748B; font-size: 14px; }
+        @media (max-width: 768px) { .mobile-brand { display: block; } }
+    </style>
 </head>
 <body>
     <div class="auth-wrapper fade-in">
@@ -20,8 +26,15 @@
             </div>
 
             <div class="auth-content">
+                <div class="mobile-brand">
+                    <h1>加入我们</h1>
+                    <p>开启你的互助之旅</p>
+                </div>
+
                 <h2 class="auth-title">创建新账号</h2>
-                <p class="auth-subtitle" style="margin-bottom: 30px;"> </p> <form id="register-form">
+                <p class="auth-subtitle">完善信息以开始使用</p> 
+                
+                <form id="register-form">
                     <div class="form-group">
                         <input type="text" id="student_id" class="form-input" placeholder="学号" required>
                     </div>

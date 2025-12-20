@@ -2,13 +2,23 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>欢迎登录 - UniRun</title>
     <link rel="stylesheet" href="/static/css/global.css">
     <link rel="stylesheet" href="/static/css/layout.css">
     <link rel="stylesheet" href="/static/css/components.css">
     <link rel="stylesheet" href="/static/css/animations.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        /* 仅在移动端显示的品牌头 */
+        .mobile-brand { display: none; margin-bottom: 30px; }
+        .mobile-brand h1 { font-size: 32px; font-weight: 800; color: var(--color-blue-dark); line-height: 1.1; }
+        .mobile-brand p { color: var(--color-text-sub); font-size: 14px; }
+        
+        @media (max-width: 768px) {
+            .mobile-brand { display: block; }
+        }
+    </style>
 </head>
 <body>
     <div class="auth-wrapper fade-in">
@@ -20,6 +30,11 @@
                 </div>
             </div>
             <div class="auth-content">
+                <div class="mobile-brand">
+                    <h1>Campus Runner</h1>
+                    <p>Make Life Easier</p>
+                </div>
+
                 <h2 class="auth-title">欢迎登录</h2>
                 <p class="auth-subtitle">输入学号连接你的校园跑腿网络</p>
                 
@@ -35,7 +50,7 @@
                     </button>
                 </form>
                 
-                <p class="auth-footer"style="text-align: center;">
+                <p class="auth-footer" style="text-align: center;">
                     没有账号? <a href="/register">立即注册</a>
                 </p>
             </div>

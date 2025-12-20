@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>UniRun</title>
+    
+    <link rel="stylesheet" href="/static/css/global.css">
+    <link rel="stylesheet" href="/static/css/layout.css">
+    <link rel="stylesheet" href="/static/css/components.css">
+    <link rel="stylesheet" href="/static/css/animations.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        .avatar-link, .avatar-link img, #header-avatar {
+            width: 40px !important; height: 40px !important;
+            border-radius: 50% !important; object-fit: cover !important;
+            display: block !important;
+        }
+
+        .mobile-bottom-layout {
+            display: block;
+            position: fixed; bottom: 0; left: 0; right: 0;
+            z-index: 9999;
+            pointer-events: none;
+        }
+
+        /* =========================================================
+           [终极结构修复] 底部导航栏
+           ========================================================= */
+        
+        /* 1. 外层容器：负责背景色 + 底部安全区垫高 */
+        .bottom-view-nav {
+            pointer-events: auto;
+            background: #fff;
+            width: 100%;
+            border-top: 1px solid #f0f0f0;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+            
+            /* 高度自动，由内部撑开 */
+            height: auto;
+            
+            /* 底部安全区 Padding (这就是那个白条) */
+            padding-bottom: 0;
+            padding-bottom: constant(safe-area-inset-bottom);
+            padding-bottom: env(safe-area-inset-bottom);
+            
+            position: relative; 
+            z-index: 9999;
+        }
+
+        /* 2. [新增] 内层包装器：锁死高度，专门放图标，不受 Padding 影响 */
+        .nav-content-wrapper {
+            height: 60px !important; /* 强制 60px */
+            width: 100%;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+        }
+
+        /* 3. 图标项 */
+        .bottom-nav-item {
+            display: flex; flex-direction: column; align-items: center; gap: 4px;
+            color: #94A3B8; font-size: 10px; font-weight: 600;
+            padding: 0 10px; border-radius: 12px; cursor: pointer; transition: all 0.2s;
+            justify-content: center;
+            height: 100%; /* 填满内层的 60px */
+            flex: 1;
+        }
+        .bottom-nav-item i { font-size: 20px; margin-bottom: 2px; color: inherit; }
+        
+        .bottom-nav-item[data-category="all"].active { color: #0F172A; background-color: #F1F5F9; }
+        .bottom-nav-item[data-category="food"].active { color: #FF6B35; background-color: #FFF7ED; }
+        .bottom-nav-item[data-category="package"].active { color: #2E86DE; background-color: #EFF6FF; }
+        .bottom-nav-item[data-category="print"].active { color: #9B59B6; background-color: #FAF5FF; }
+
+        /* PC端 */
+        @media screen and (min-width: 769px) {
+            .mobile-bottom-layout { left: var(--sidebar-width); }
+            .pc-publish-bar { display: inline-flex !important; }
+            .mobile-fab-group { display: none !important; }
+            .bottom-view-nav { display: none !important; }
+        }
+
+        .pc-publish-bar {
+            pointer-events: auto;
+            background: #fff;
+            display: inline-flex;
+            gap: 25px;
+            padding: 10px 30px;
+            border-radius: 50px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            margin-bottom: 15px; 
+            position: absolute;
+            bottom: 40px; 
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        .fab-btn-pc {
+            width: 48px; height: 48px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            color: #fff; font-size: 20px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+            transition: transform 0.2s; cursor: pointer;
+        }
+        .fab-btn-pc:hover { transform: translateY(-3px); }
+
+        /* 移动端适配 */
+        @media screen and (max-width: 768px) {
+            .sidebar { display: none !important; }
+            .pc-publish-bar { display: none !important; }
+            .mobile-fab-group { display: flex !important; }
+
+            .main-content {
+                margin-left: 0 !important;
+                /* 底部留白 = 100px + 安全区 */
+                padding: 0 15px calc(100px + env(safe-area-inset-bottom)) 15px !important; 
+                width: 100% !important;
+                min-height: 100vh;
+            }
+
+            /* --- 移动端 + 号按钮位置 --- */
+            .mobile-fab-group {
+                position: absolute;
+                /* 基础位置 80px + 安全区高度 */
+                bottom: 80px; 
+                bottom: calc(80px + constant(safe-area-inset-bottom));
+                bottom: calc(80px + env(safe-area-inset-bottom));
+                
+                right: 20px;
+                left: auto; 
+                transform: none;
+                flex-direction: column-reverse;
+                align-items: flex-end; 
+                gap: 15px;
+                z-index: 10000;
+            }
+
+            .main-fab-trigger {
+                pointer-events: auto;
+                width: 56px; height: 56px;
+                border-radius: 50%;
+                background: #0F172A;
+                color: #fff;
+                display: flex; align-items: center; justify-content: center;
+                font-size: 24px;
+                box-shadow: 0 4px 20px rgba(15, 23, 42, 0.4);
+                border: 3px solid #fff;
+                cursor: pointer;
+                transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), background 0.3s;
+            }
+            .main-fab-trigger.active { transform: rotate(135deg); background: #EF4444; }
+
+            .fab-options-container {
+                display: flex; flex-direction: column; gap: 15px; margin-bottom: 5px;
+                opacity: 0; visibility: hidden;
+                transform: translateY(20px) scale(0.8);
+                transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+                pointer-events: none;
+                align-items: flex-end;
+            }
+            .fab-options-container.show { opacity: 1; visibility: visible; transform: translateY(0) scale(1); pointer-events: auto; }
+
+            .fab-option-row { display: flex; align-items: center; gap: 12px; justify-content: flex-end; }
+            .fab-label { background: #fff; color: #333; padding: 6px 12px; border-radius: 8px; font-size: 13px; font-weight: 700; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+            .fab-mini-btn { width: 48px; height: 48px; border-radius: 50%; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+
+            .fab-backdrop {
+                position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+                background: rgba(255,255,255,0.9); backdrop-filter: blur(5px);
+                z-index: 9998; display: none; opacity: 0; transition: opacity 0.3s; pointer-events: auto;
+            }
+            .fab-backdrop.show { display: block; opacity: 1; }
+
+            .right-slide-panel { position: fixed; top: 0; left: 0; right: 0; bottom: 0; width: 100% !important; z-index: 10000; transform: translateX(100%); transition: transform 0.3s ease; background: #fff; }
+            .right-slide-panel.open { transform: translateX(0) !important; right: 0 !important; }
+            
+            .panel-footer { 
+                padding-bottom: 20px !important;
+                padding-bottom: calc(20px + env(safe-area-inset-bottom)) !important; 
+            }
+            .floating-back-btn { left: 20px !important; bottom: 150px !important; margin-left: 0 !important; }
+        }
+
+        .modal-overlay {
+            position: fixed !important; top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important;
+            background: rgba(0,0,0,0.5) !important; z-index: 20000 !important;
+            display: none !important; align-items: center !important; justify-content: center !important;
+            backdrop-filter: blur(2px);
+        }
+        .modal-overlay.show { display: flex !important; }
+        .modal-content {
+            margin: 0 !important; position: relative !important; width: 85% !important; max-width: 380px !important;
+            background: #fff; border-radius: 20px; padding: 25px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); animation: popIn 0.3s;
+        }
+        @keyframes popIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    </style>
+</head>
+<body>
+    <nav class="sidebar" id="app-sidebar">
+        <div class="sidebar-logo"><i class="fas fa-bolt" style="color: var(--color-primary); font-size: 28px;"></i></div>
+        <div class="nav-item active" data-category="all" onclick="window.location.href='/'"><i class="fas fa-th-large"></i></div>
+        <div class="nav-item" data-category="food" onclick="window.location.href='/?category=food'"><i class="fas fa-hamburger"></i></div>
+        <div class="nav-item" data-category="package" onclick="window.location.href='/?category=package'"><i class="fas fa-box-open"></i></div>
+        <div class="nav-item" data-category="print" onclick="window.location.href='/?category=print'"><i class="fas fa-print"></i></div>
+    </nav>
+
+    <main class="main-content">
+        <header class="app-header">
+            <div class="page-title"><h2>Campus Runner</h2></div>
+            <div class="user-info">
+                <div class="badge-points" id="header-points" onclick="loadPointHistory(true)" style="cursor: pointer;"><i class="fas fa-coins"></i> <span>--</span> pts</div>
+                <div class="user-dropdown-container" id="userDropdownTrigger">
+                    <a href="javascript:void(0)" class="avatar-link" onclick="toggleUserDropdown(event)">
+                        <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAYklEQVR4nO3RwQ2AIBBE0W9ohbAGS7A0S7MEDaAAMz4kxsO8/M1k50feXO6xHwAAAAAAAAAAAN50697fcz9vP9+jN0e/v0e/v0e/v0e/v0e/v0e/v0e/vwMAAAAAAADgH3wB1Y8D7/j478gAAAAASUVORK5CYII=" alt="User" id="header-avatar">
+                    </a>
+                    <div class="dropdown-menu" id="userDropdown" style="display:none; position:absolute; top:50px; right:0; background:#fff; padding:10px; border-radius:10px; box-shadow:0 5px 20px rgba(0,0,0,0.1); width:150px; z-index:2000;">
+                        <a href="/profile" style="display:block; padding:10px; color:#333;">个人中心</a>
+                        <a href="javascript:logout()" style="display:block; padding:10px; color:red;">退出登录</a>
+                    </div>
+                </div>
+            </div>
+        </header>
+        <div id="content-container">{% block content %}{% endblock %}</div>
+    </main>
+
+    <div class="mobile-bottom-layout">
+        <div class="pc-publish-bar">
+            <div class="fab-btn-pc" style="background: #FF6B35;" onclick="window.location.href='/orders/create?category=food'"><i class="fas fa-hamburger"></i></div>
+            <div class="fab-btn-pc" style="background: #2E86DE;" onclick="window.location.href='/orders/create?category=package'"><i class="fas fa-box-open"></i></div>
+            <div class="fab-btn-pc" style="background: #9B59B6;" onclick="window.location.href='/orders/create?category=print'"><i class="fas fa-print"></i></div>
+        </div>
+
+        <div class="fab-backdrop" id="fabBackdrop" onclick="toggleFabMenu()"></div>
+        <div class="mobile-fab-group">
+            <div class="main-fab-trigger" id="mainFabBtn" onclick="toggleFabMenu()"><i class="fas fa-plus"></i></div>
+            <div class="fab-options-container" id="fabOptions">
+                <div class="fab-option-row" onclick="window.location.href='/orders/create?category=print'">
+                    <span class="fab-label">发布打印</span><div class="fab-mini-btn" style="background: #9B59B6;"><i class="fas fa-print"></i></div>
+                </div>
+                <div class="fab-option-row" onclick="window.location.href='/orders/create?category=package'">
+                    <span class="fab-label">发布快递</span><div class="fab-mini-btn" style="background: #2E86DE;"><i class="fas fa-box-open"></i></div>
+                </div>
+                <div class="fab-option-row" onclick="window.location.href='/orders/create?category=food'">
+                    <span class="fab-label">发布带饭</span><div class="fab-mini-btn" style="background: #FF6B35;"><i class="fas fa-hamburger"></i></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="bottom-view-nav">
+            <div class="nav-content-wrapper">
+                <div class="bottom-nav-item active" data-category="all" onclick="window.location.href='/'"><i class="fas fa-th-large"></i><span>大厅</span></div>
+                <div class="bottom-nav-item" data-category="food" onclick="window.location.href='/?category=food'"><i class="fas fa-hamburger"></i><span>食堂</span></div>
+                <div class="bottom-nav-item" data-category="package" onclick="window.location.href='/?category=package'"><i class="fas fa-box-open"></i><span>快递</span></div>
+                <div class="bottom-nav-item" data-category="print" onclick="window.location.href='/?category=print'"><i class="fas fa-print"></i><span>打印</span></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="pointsModal" onclick="if(event.target === this) document.getElementById('pointsModal').classList.remove('show')">
+        <div class="modal-content">
+            <div class="modal-header"><h3>积分记录</h3><i class="fas fa-times modal-close" onclick="document.getElementById('pointsModal').classList.remove('show')"></i></div>
+            <div class="modal-body">
+                <div style="text-align: center; margin-bottom: 20px;"><div style="font-size: 36px; font-weight: 800; color: #F59E0B;" id="modal-current-points">--</div></div>
+                <div id="points-list" style="max-height: 300px; overflow-y: auto;"></div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-overlay" id="confirmModal">
+        <div class="modal-content" style="text-align: center;">
+            <h3 id="confirm-title" style="margin-bottom:10px;">提示</h3>
+            <p id="confirm-message" style="color:#718096; margin-bottom:20px;"></p>
+            <div style="display: flex; gap: 10px;">
+                <button class="btn btn-block" style="background:#EDF2F7; color:#4A5568;" onclick="closeConfirmModal()">取消</button>
+                <button class="btn btn-block" id="confirm-btn-action" style="background:#3182CE; color:#fff;">确认</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/js/api.js"></script>
+    <script>
+        function toggleUserDropdown(e) { e.stopPropagation(); var menu = document.getElementById('userDropdown'); menu.style.display = menu.style.display === 'block' ? 'none' : 'block'; }
+        function logout() { localStorage.clear(); window.location.href = '/login'; }
+        
+        async function loadPointHistory(showModal = false) {
+            try {
+                var res = await api.get('/user/points');
+                if(document.querySelector('#header-points span')) document.querySelector('#header-points span').innerText = res.points;
+                document.getElementById('modal-current-points').innerText = res.points;
+                var list = document.getElementById('points-list'); list.innerHTML = '';
+                if(res.records && res.records.length > 0) { res.records.forEach(r => { list.innerHTML += `<div class="point-record-item"><div class="point-info"><h4>${r.source}</h4><span>${r.time}</span></div><div class="point-value ${r.change>0?'plus':'minus'}">${r.change>0?'+':''}${r.change}</div></div>`; }); } 
+                else { list.innerHTML = '<div style="text-align:center;color:#ccc;padding:10px;">无记录</div>'; }
+                if (showModal) document.getElementById('pointsModal').classList.add('show');
+            } catch(e){}
+        }
+        
+        window.toggleFabMenu = function() {
+            var btn = document.getElementById('mainFabBtn');
+            var options = document.getElementById('fabOptions');
+            var backdrop = document.getElementById('fabBackdrop');
+            if (btn.classList.contains('active')) {
+                btn.classList.remove('active'); options.classList.remove('show'); backdrop.classList.remove('show'); setTimeout(() => backdrop.style.display = 'none', 300);
+            } else {
+                btn.classList.add('active'); backdrop.style.display = 'block'; backdrop.offsetHeight; backdrop.classList.add('show'); options.classList.add('show');
+            }
+        }
+
+        window.showConfirmModal = function(title, message, onConfirm) {
+            document.getElementById('confirm-title').innerText = title; document.getElementById('confirm-message').innerText = message;
+            var btn = document.getElementById('confirm-btn-action'); var newBtn = btn.cloneNode(true); btn.parentNode.replaceChild(newBtn, btn);
+            newBtn.onclick = function() { onConfirm(); closeConfirmModal(); }; 
+            document.getElementById('confirmModal').classList.add('show');
+        }
+        window.closeConfirmModal = function() { document.getElementById('confirmModal').classList.remove('show'); }
+        document.addEventListener('click', function(e) { var dd = document.getElementById('userDropdown'); var trigger = document.getElementById('userDropdownTrigger'); if (dd && dd.style.display === 'block' && !trigger.contains(e.target)) dd.style.display = 'none'; });
+        document.addEventListener('DOMContentLoaded', function() { if(window.location.pathname !== '/login') loadPointHistory(); });
+    </script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

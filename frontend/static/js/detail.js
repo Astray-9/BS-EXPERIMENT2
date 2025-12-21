@@ -3,14 +3,45 @@
 let currentOrderId = null;
 let currentUser = null;
 let currentOrderData = null;
+let statusPollingInterval = null; 
 
 // 全局入口
 window.initDetailLogic = async function(orderId) {
     currentOrderId = orderId;
     currentUser = JSON.parse(localStorage.getItem('user') || '{}');
-    await loadOrderData();
     
-    // 绑定评分点击
+    // 1. 立即加载一次数据
+    await loadOrderData();
+
+    // 2. 启动轮询
+    if (statusPollingInterval) clearInterval(statusPollingInterval);
+    
+    statusPollingInterval = setInterval(async () => {
+        try {
+            const res = await api.get(`/orders/${currentOrderId}`);
+            const newOrder = res.data;
+
+            // 只有当状态发生改变时才刷新UI，避免页面闪烁
+            // 注意：如果后端在轮询中返回了新消息，这里也可以扩展逻辑去刷新聊天，
+            // 但为了简化，目前只针对状态改变和完成弹窗
+            if (currentOrderData && newOrder.status !== currentOrderData.status) {
+                console.log('订单状态更新:', newOrder.status);
+                currentOrderData = newOrder;
+                updateUI(currentOrderData);
+
+                if (currentOrderData.status === 3) {
+                     document.getElementById('ratingModal').style.display = 'flex';
+                     clearInterval(statusPollingInterval); 
+                }
+            }
+            // 每次轮询更新数据缓存，以便聊天窗口打开时能看到最新消息
+            currentOrderData = newOrder;
+            
+            // 如果聊天窗口是打开的，尝试刷新消息（简单的追加逻辑需更复杂处理，这里仅更新数据源）
+            // 若要实时聊天，建议在 openChat 时单独轮询消息接口。
+        } catch(e) { console.error("轮询状态失败", e); }
+    }, 3000);
+    
     document.querySelectorAll('.star-rating i').forEach(star => {
         star.onclick = function() {
             const val = this.dataset.val;
@@ -35,11 +66,8 @@ async function loadOrderData() {
 function updateUI(order) {
     // 1. 基础信息填充
     document.getElementById('panel-title').innerText = order.description || '无描述';
-    
-    // 安全截取订单号
     const orderIdStr = String(order.order_id);
     document.getElementById('panel-id').innerText = orderIdStr.length > 8 ? orderIdStr.substring(0, 8) : orderIdStr;
-    
     document.getElementById('panel-price').innerText = '¥' + order.reward_points;
     document.getElementById('time-create').innerText = order.create_time;
 
@@ -52,7 +80,6 @@ function updateUI(order) {
     // 2. 时间轴更新
     const trackTaken = document.getElementById('track-taken');
     const trackDone = document.getElementById('track-done');
-    
     if(trackTaken) trackTaken.className = 'timeline-item';
     if(trackDone) trackDone.className = 'timeline-item';
 
@@ -69,50 +96,52 @@ function updateUI(order) {
         document.getElementById('time-done').innerText = order.finish_time || '刚刚';
     }
 
-    // 3. 底部按钮逻辑 (强力修复版)
+    // 3. 底部按钮逻辑
     const actions = document.getElementById('panel-actions');
     const footer = document.querySelector('.panel-footer');
     
-    // [修复] 强制转换为字符串比较，确保万无一失
-    // 注意：如果是系统预设的假数据订单，user_id 可能不等于当前用户，所以显示接单是正常的。
-    // 请务必自己发布一个新订单进行测试！
-    const isOwner = String(order.user_id) === String(currentUser.user_id);
+    // 判定是否为发布者
+    const isOwner = String(order.requester_id) === String(currentUser.user_id);
     
-    console.log(`Order Owner: ${order.user_id}, Current User: ${currentUser.user_id}, isOwner: ${isOwner}`);
-
-    footer.className = 'panel-footer'; // 重置类名
+    footer.className = 'panel-footer'; 
+    footer.style.display = 'grid'; 
 
     if (order.status === 0) {
+        // 待接单状态
         if (isOwner) {
-            // [发布者本人] -> 显示 [联系] [取消订单]
+            // [我是发布者]
             actions.innerHTML = `
                 <button class="btn btn-secondary-outline" onclick="toggleChat()"><i class="fas fa-comment-dots" style="margin-right:8px;"></i>联系</button>
                 <button class="btn btn-danger" onclick="cancelOrder('${order.order_id}')">取消订单</button>
             `;
         } else {
-            // [其他路人] -> 显示 [立即接单]
+            // [我是路人]
             footer.classList.add('single-btn');
             actions.innerHTML = `<button class="btn btn-submit btn-block" onclick="takeOrder('${order.order_id}')" style="background:#3182CE;color:#fff;">立即接单</button>`;
         }
     } else if (order.status === 1 || order.status === 2) {
-        // 配送中/待收货 -> 显示 [联系] [操作]
-        const actionBtn = isOwner 
-            ? `<button class="btn btn-submit" style="background:#0F172A;color:#fff;" onclick="confirmFinish('${order.order_id}')">确认收货</button>`
-            : `<button class="btn btn-submit" style="background:#48BB78;color:#fff;" onclick="confirmDeliver('${order.order_id}')">确认送达</button>`;
+        // 配送中 / 待收货状态
+        let actionBtn = '';
+        
+        if (isOwner) {
+             // [我是发布者]
+             actionBtn = `<button class="btn btn-submit" style="background:#0F172A;color:#fff;" onclick="confirmFinish('${order.order_id}')">确认收货</button>`;
+        } else if (String(order.runner_id) === String(currentUser.user_id)) {
+             // [我是接单者]
+             actionBtn = `<button class="btn btn-submit" style="background:#48BB78;color:#fff;" onclick="confirmDeliver('${order.order_id}')">确认送达</button>`;
+        }
             
         actions.innerHTML = `
             <button class="btn btn-secondary-outline" onclick="toggleChat()"><i class="fas fa-comment-dots" style="margin-right:8px;"></i>联系对方</button>
             ${actionBtn}
         `;
     } else {
-        // 已完成/已取消 -> 隐藏底部栏
+        // 已完成/已取消
         footer.style.display = 'none';
     }
 
-    // 4. 额外信息提示 (根据订单类型动态文案)
+    // 4. 额外信息提示
     const extraBox = document.getElementById('extra-info-box');
-    
-    // [新增] 地点动态映射
     let locationName = '指定地点';
     if (order.category === 'food') locationName = '食堂';
     else if (order.category === 'package') locationName = '驿站';
@@ -123,7 +152,6 @@ function updateUI(order) {
         extraBox.innerHTML = '<i class="fas fa-info-circle"></i> 如需修改需求请先取消订单。';
     } else if (!isOwner && order.status === 1) {
         extraBox.style.display = 'block';
-        // [动态显示] 根据类型显示不同地点
         extraBox.innerHTML = `<i class="fas fa-running"></i> 请尽快前往<strong>${locationName}</strong>完成配送任务。`;
     } else {
         extraBox.style.display = 'none';
@@ -158,7 +186,7 @@ async function confirmDeliver(oid) {
         try {
             await api.post(`/orders/${oid}/deliver`);
             showToast('已通知发布者验收');
-            loadOrderData();
+            loadOrderData(); 
         } catch(e) { showToast(e.message); }
     });
 }
@@ -166,7 +194,7 @@ async function confirmDeliver(oid) {
 async function confirmFinish(oid) {
     showConfirmModal('确认收货？', '确认收到物品并完成订单？', async () => {
         try {
-            await api.post(`/orders/${oid}/finish`);
+            await api.post(`/orders/${oid}/finish`); 
             document.getElementById('ratingModal').style.display = 'flex';
             if(window.reloadOrderList) window.reloadOrderList();
         } catch(e) { showToast(e.message); }
@@ -189,19 +217,26 @@ function toggleChat() {
     }
 }
 
+// [修改] 移除硬编码测试消息，改为渲染真实数据
 async function loadChatHistory() {
     const chatBody = document.getElementById('chat-history');
-    if (!chatBody.innerHTML) {
-        chatBody.innerHTML = '<div style="text-align:center;color:#ccc;font-size:12px;margin-bottom:10px;">- 历史消息 -</div>';
-        const msgs = [
-            { type: 'left', text: '你好，请问具体的取餐窗口是哪里？' },
-            { type: 'right', text: '在二楼最左边的麻辣烫窗口，单号是 1024' },
-            { type: 'left', text: '好的，我现在过去，大约10分钟到寝室楼下。' }
-        ];
-        msgs.forEach(m => {
-            chatBody.innerHTML += `<div class="msg ${m.type}">${m.text}</div>`;
+    
+    // 重置内容
+    chatBody.innerHTML = '<div style="text-align:center;color:#ccc;font-size:12px;margin-bottom:10px;">- 历史消息 -</div>';
+    
+    // 渲染 currentOrderData 中的消息
+    if (currentOrderData && currentOrderData.messages && currentOrderData.messages.length > 0) {
+        currentOrderData.messages.forEach(msg => {
+            // 简单判断发送者：如果发送者ID等于当前用户ID，显示在右侧(right)，否则在左侧(left)
+            const isMe = String(msg.sender_id) === String(currentUser.user_id);
+            const type = isMe ? 'right' : 'left';
+            
+            chatBody.innerHTML += `<div class="msg ${type}">${msg.content}</div>`;
         });
+    } else {
+        chatBody.innerHTML += '<div style="text-align:center;color:#eee;font-size:12px;">暂无更多消息</div>';
     }
+    
     chatBody.scrollTop = chatBody.scrollHeight;
 }
 
@@ -210,15 +245,27 @@ async function sendMessage() {
     const text = input.value.trim();
     if (!text) return;
     
+    // 1. 立即上屏（乐观UI）
     const chatBody = document.getElementById('chat-history');
     chatBody.innerHTML += `<div class="msg right">${text}</div>`;
-    input.value = '';
     chatBody.scrollTop = chatBody.scrollHeight;
     
-    setTimeout(() => {
-        chatBody.innerHTML += `<div class="msg left">收到，路上注意安全。</div>`;
-        chatBody.scrollTop = chatBody.scrollHeight;
-    }, 1000);
+    // 2. 发送给后端
+    try {
+        await api.post(`/orders/${currentOrderId}/chat`, {
+            content: text,
+            type: 'text'
+        });
+        
+        // 3. [修改] 移除自动回复的测试代码
+        input.value = '';
+        
+        // 重新加载数据以确保同步（可选）
+        // await loadOrderData(); 
+    } catch(e) {
+        showToast("发送失败");
+        console.error(e);
+    }
 }
 
 function showToast(msg) {
@@ -232,3 +279,11 @@ function showToast(msg) {
     toast.innerText = msg;
     setTimeout(() => toast.remove(), 2000);
 }
+
+window.cleanupDetailLogic = function() {
+    if (statusPollingInterval) {
+        clearInterval(statusPollingInterval);
+        statusPollingInterval = null;
+        console.log('详情页轮询已停止');
+    }
+};

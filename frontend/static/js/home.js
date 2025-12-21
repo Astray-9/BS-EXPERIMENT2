@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const urlParams = new URLSearchParams(window.location.search);
     let currentCategory = urlParams.get('category') || 'all';
     
-    // [修复] 高亮底部导航栏 (适配新的 bottom-nav-item 类名)
+    // 高亮底部导航栏
     document.querySelectorAll('.bottom-nav-item').forEach(item => {
         item.classList.remove('active');
         if (item.dataset.category === currentCategory) {
@@ -16,7 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
     
-    // 同时也高亮 PC 端的侧边栏
+    // 高亮 PC 端侧边栏
     document.querySelectorAll('.nav-item').forEach(item => {
         item.classList.remove('active');
         if (item.dataset.category === currentCategory) {
@@ -36,8 +36,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if(emptyState) emptyState.style.display = 'none';
 
         try {
-            // [核心修复] 请求 active 状态，显示所有未结束的订单 (0,1,2)
-            // 这样用户接单后，订单依然显示在列表中（状态变为配送中）
+            // [新增] 获取当前登录用户信息用于比对
+            const currentUserStr = localStorage.getItem('user');
+            const currentUser = currentUserStr ? JSON.parse(currentUserStr) : {};
+
             let endpoint = '/orders/list?status=active';
             
             if (category && category !== 'all') {
@@ -54,7 +56,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             orders.forEach(order => {
-                orderList.appendChild(createOrderCard(order));
+                orderList.appendChild(createOrderCard(order, currentUser));
             });
 
         } catch (error) {
@@ -63,7 +65,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function createOrderCard(order) {
+    function createOrderCard(order, currentUser) {
         const div = document.createElement('div');
         div.className = 'card fade-in';
         
@@ -72,6 +74,13 @@ document.addEventListener('DOMContentLoaded', () => {
         if(order.status === 1) statusHtml = '<span class="tag tag-running" style="margin-left:auto;">配送中</span>';
         else if(order.status === 2) statusHtml = '<span class="tag tag-running" style="margin-left:auto;">待收货</span>';
         else if(order.status === 3) statusHtml = '<span class="tag" style="background:#CBD5E0;margin-left:auto;">已完成</span>';
+
+        // [新增] “我发布的” 标签逻辑
+        let myPostHtml = '';
+        // 注意：API 返回的是 int, localStorage 可能是 string，转 string 比对最稳
+        if (currentUser && String(order.requester_id) === String(currentUser.user_id)) {
+            myPostHtml = '<span class="tag tag-mine" style="margin-right: 6px;">我发布的</span>';
+        }
 
         div.onclick = () => openDetail(order.order_id);
 
@@ -84,8 +93,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 <i class="fas ${iconMap[order.category] || 'fa-running'}"></i>
             </div>
             <div class="card-body">
-                <div class="card-title" style="display:flex; justify-content:space-between;">
-                    <span>${title}</span>
+                <div class="card-title" style="display:flex; justify-content:space-between; align-items:center;">
+                    <div style="display:flex; align-items:center; overflow:hidden;">
+                        ${myPostHtml}
+                        <span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${title}</span>
+                    </div>
                     ${statusHtml}
                 </div>
                 <div class="card-meta"><span>200m</span><span>•</span><span>刚刚</span></div>
@@ -126,6 +138,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     window.closeDetail = function() {
+        if (window.cleanupDetailLogic) {
+            window.cleanupDetailLogic();
+        }
+
         document.getElementById('main-market-area').classList.remove('blur-mode');
         const container = document.getElementById('detail-overlay-container');
         const panel = container.querySelector('.right-slide-panel');
